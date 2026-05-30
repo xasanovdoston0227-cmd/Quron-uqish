@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qur'on O'rganish</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0a0f0d; min-height: 100vh; color: #e8f5f0; }
+  .app { max-width: 700px; margin: 0 auto; padding: 1rem; }
+  .header { text-align: center; padding: 2rem 1rem 1.5rem; background: #111a15; border-radius: 16px; margin-bottom: 16px; border: 1px solid #1a3028; }
+  .header .bismillah { font-size: 32px; color: #2ecc8f; margin-bottom: 8px; }
+  .header h1 { font-size: 26px; font-weight: 600; color: #e8f5f0; margin-bottom: 6px; }
+  .header p { font-size: 14px; color: #5a8a72; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 120px; padding: 12px 8px; border-radius: 12px; border: 2px solid #1a3028; background: #111a15; color: #5a8a72; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .tab.active { background: #1D9E75; color: white; border-color: #1D9E75; }
+  .tab:hover:not(.active) { background: #172318; border-color: #1D9E75; color: #2ecc8f; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .card { background: #111a15; border-radius: 16px; padding: 1.25rem; margin-bottom: 12px; border: 1px solid #1a3028; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: #111a15; border-radius: 12px; padding: 14px; text-align: center; border: 1px solid #1a3028; }
+  .stat-num { font-size: 26px; font-weight: 700; color: #2ecc8f; }
+  .stat-label { font-size: 12px; color: #5a8a72; margin-top: 4px; }
+  .harf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
+  .harf-btn { background: #0d1510; border: 2px solid #1a3028; border-radius: 12px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .harf-btn:hover { background: #0f2a1f; border-color: #1D9E75; transform: translateY(-2px); }
+  .harf-btn.done { background: #0f2a1f; border-color: #1D9E75; }
+  .harf-arab { font-size: 26px; color: #e8f5f0; display: block; }
+  .harf-uz { font-size: 11px; color: #5a8a72; margin-top: 4px; }
+  .harf-detail { background: #0d2018; border-radius: 16px; padding: 2rem; text-align: center; margin-bottom: 16px; display: none; border: 2px solid #1D9E75; }
+  .harf-detail.show { display: block; }
+  .harf-big { font-size: 80px; color: #2ecc8f; line-height: 1.2; }
+  .harf-name { font-size: 20px; font-weight: 600; color: #e8f5f0; margin: 10px 0 6px; }
+  .harf-misol { font-size: 14px; color: #5a8a72; }
+  .sura-list { display: flex; flex-direction: column; gap: 8px; }
+  .sura-item { background: #111a15; border: 2px solid #1a3028; border-radius: 14px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; }
+  .sura-item:hover { background: #172318; transform: translateX(4px); border-color: #1D9E75; }
+  .sura-item.learned { border-color: #1D9E75; background: #0d2018; }
+  .sura-left { display: flex; align-items: center; gap: 12px; }
+  .sura-num { width: 38px; height: 38px; border-radius: 50%; background: #0d2018; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #2ecc8f; flex-shrink: 0; border: 1px solid #1D9E75; }
+  .sura-num.learned { background: #1D9E75; color: white; }
+  .sura-name { font-size: 15px; font-weight: 600; color: #e8f5f0; }
+  .sura-info { font-size: 12px; color: #5a8a72; margin-top: 2px; }
+  .sura-arab { font-size: 20px; color: #2ecc8f; }
+  .sura-detail { background: #0a1510; border-radius: 12px; padding: 1.25rem; margin-top: 6px; display: none; border: 1px solid #1D9E75; }
+  .sura-detail.show { display: block; }
+  .sura-text { font-size: 24px; line-height: 2.2; color: #e8f5f0; text-align: right; direction: rtl; margin-bottom: 1rem; background: #0d1a12; padding: 1rem; border-radius: 10px; border: 1px solid #1a3028; }
+  .sura-tarjima { font-size: 14px; color: #7ab898; line-height: 1.8; font-style: italic; }
+  .btn-green { background: #1D9E75; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 14px; transition: all 0.2s; }
+  .btn-green:hover { background: #2ecc8f; transform: scale(1.02); }
+  .progress-bar { height: 8px; background: #1a3028; border-radius: 4px; margin-bottom: 16px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1D9E75, #2ecc8f); border-radius: 4px; transition: width 0.4s ease; }
+  .quiz-card { background: #111a15; border-radius: 16px; padding: 1.75rem; border: 1px solid #1a3028; }
+  .quiz-question { font-size: 18px; font-weight: 600; color: #e8f5f0; margin-bottom: 6px; }
+  .quiz-arab { font-size: 48px; color: #2ecc8f; margin: 1rem 0; text-align: center; background: #0d2018; border-radius: 12px; padding: 1rem; border: 1px solid #1D9E75; }
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quiz-opt { background: #0d1510; border: 2px solid #1a3028; border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; font-size: 15px; transition: all 0.2s; color: #e8f5f0; font-weight: 500; }
+  .quiz-opt:hover { background: #0f2a1f; border-color: #1D9E75; color: #2ecc8f; }
+  .quiz-opt.correct { background: #0d2018; border-color: #1D9E75; color: #2ecc8f; }
+  .quiz-opt.wrong { background: #2a0d0d; border-color: #E24B4A; color: #ff7070; }
+  .ai-box { background: #111a15; border-radius: 16px; padding: 1.25rem; border: 1px solid #1a3028; }
+  .ai-messages { max-height: 400px; overflow-y: auto; margin-bottom: 12px; }
+  .ai-msg { padding: 12px 16px; border-radius: 14px; margin-bottom: 8px; font-size: 14px; line-height: 1.7; max-width: 85%; }
+  .ai-msg.bot { background: #0d2018; color: #7ab898; margin-right: auto; border-bottom-left-radius: 4px; border: 1px solid #1a3028; }
+  .ai-msg.user { background: #1D9E75; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+  .ai-msg.loading { background: #172318; color: #5a8a72; font-style: italic; }
+  .ai-input-row { display: flex; gap: 8px; }
+  .ai-input { flex: 1; padding: 12px 16px; border: 2px solid #1a3028; border-radius: 12px; font-size: 14px; background: #0a0f0d; color: #e8f5f0; outline: none; transition: border 0.2s; }
+  .ai-input:focus { border-color: #1D9E75; }
+  .ai-input::placeholder { color: #3a6050; }
+  .ai-send { background: #1D9E75; color: white; border: none; padding: 12px 18px; border-radius: 12px; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+  .ai-send:hover { background: #2ecc8f; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; margin-left: 6px; background: #0d2018; color: #2ecc8f; font-weight: 500; border: 1px solid #1D9E75; }
+  .section-title { font-size: 16px; font-weight: 600; color: #e8f5f0; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #1a3028; }
+  .info-note { font-size: 12px; color: #7ab898; background: #1a2015; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; border-left: 3px solid #FFC107; }
+
+  .quiz-hint-btn { background: #0d2018; color: #2ecc8f; border: 1.5px solid #1D9E75; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .quiz-hint-btn:hover { background: #1a3a28; }
+  .quiz-hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .quiz-hint-box { background: #0d2018; border: 1px solid #1a4030; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #7ab898; margin-bottom: 10px; line-height: 1.6; }
+
+  /* MAQSADLAR */
+  .maqsad-item { background: #0d1a12; border: 1.5px solid #1a3028; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+  .maqsad-item.done { border-color: #1D9E75; background: #0d2018; }
+  .maqsad-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #1a3028; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.2s; background: #080f0b; }
+  .maqsad-check.done { background: #1D9E75; border-color: #1D9E75; color: white; }
+  .maqsad-text { flex: 1; font-size: 14px; color: #e8f5f0; }
+  .maqsad-item.done .maqsad-text { text-decoration: line-through; color: #5a8a72; }
+  .maqsad-del { color: #4a2020; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: color 0.2s; }
+  .maqsad-del:hover { color: #ff7070; }
+  .maqsad-progress { height: 6px; background: #1a3028; border-radius: 3px; margin: 6px 0 12px; overflow: hidden; }
+  .maqsad-progress-fill { height: 100%; background: linear-gradient(90deg, #1D9E75, #2ecc8f); border-radius: 3px; transition: width 0.4s; }
+  .tavsiya-item { background: #080f0b; border: 1.5px dashed #1a3028; border-radius: 10px; padding: 10px 14px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; transition: all 0.2s; }
+  .tavsiya-item:hover { border-color: #1D9E75; background: #0d1a12; }
+  .tavsiya-label { font-size: 13px; color: #7ab898; }
+  .tavsiya-add { font-size: 18px; color: #1D9E75; }
+  .maqsad-stat-row { display: flex; justify-content: space-between; font-size: 14px; color: #7ab898; margin-bottom: 6px; }
+  .maqsad-stat-row span:last-child { color: #2ecc8f; font-weight: 600; }
+  .draw-panel { background: #0d1a12; border: 2px solid #1D9E75; border-radius: 16px; padding: 1.25rem; margin-top: 12px; display: none; }
+  .draw-panel.show { display: block; }
+  .draw-panel-title { font-size: 14px; font-weight: 600; color: #2ecc8f; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .draw-wrap { position: relative; display: flex; justify-content: center; }
+  .harf-ghost { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 140px; color: rgba(46,204,143,0.07); pointer-events: none; user-select: none; line-height: 1; font-family: 'Amiri', 'Traditional Arabic', serif; }
+  #drawCanvas {
+    width: 100%;
+    max-width: 320px;
+    height: 260px;
+    background: #080f0b;
+    border-radius: 12px;
+    border: 1.5px solid #1a3028;
+    cursor: crosshair;
+    touch-action: none;
+    display: block;
+  }
+  .draw-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .draw-btn { padding: 9px 16px; border-radius: 9px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .draw-btn-clear { background: #2a1515; color: #ff7070; border: 1px solid #4a2020; }
+  .draw-btn-clear:hover { background: #3a1a1a; }
+  .draw-btn-check { background: #1D9E75; color: white; }
+  .draw-btn-check:hover { background: #2ecc8f; }
+  .draw-btn-check:disabled { opacity: 0.5; cursor: not-allowed; }
+  .draw-result { margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 500; display: none; }
+  .draw-result.good { background: #0d2018; color: #2ecc8f; border: 1px solid #1D9E75; }
+  .draw-result.bad { background: #2a0d0d; color: #ff9090; border: 1px solid #4a1515; }
+  .draw-result.checking { background: #1a2015; color: #5a8a72; font-style: italic; }
+  .stroke-size { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #5a8a72; margin-left: auto; }
+  .stroke-size input { width: 70px; accent-color: #1D9E75; }
+
+  /* MAQSAD REJIM MODAL */
+  .rejim-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .rejim-overlay.hidden { display: none; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .rejim-sheet {
+    background: #0d1a12; border-radius: 24px 24px 0 0; padding: 1.5rem 1.25rem 2rem;
+    width: 100%; max-width: 700px; max-height: 92vh; overflow-y: auto;
+    border: 1px solid #1a3028; border-bottom: none;
+    animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .rejim-handle { width: 40px; height: 4px; background: #1a3028; border-radius: 2px; margin: 0 auto 1.25rem; }
+  .rejim-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.25rem; }
+  .rejim-icon { font-size: 36px; flex-shrink: 0; }
+  .rejim-title { font-size: 18px; font-weight: 700; color: #e8f5f0; margin-bottom: 4px; }
+  .rejim-subtitle { font-size: 13px; color: #5a8a72; }
+  .rejim-close { margin-left: auto; background: #1a2a20; border: 1px solid #1a3028; color: #5a8a72; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+  .rejim-close:hover { color: #e8f5f0; border-color: #2ecc8f; }
+
+  .rejim-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .rejim-tab { padding: 8px 14px; border-radius: 10px; border: 1.5px solid #1a3028; background: #0a1510; color: #5a8a72; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .rejim-tab.active { background: #1D9E75; color: white; border-color: #1D9E75; }
+  .rejim-tab:hover:not(.active) { border-color: #1D9E75; color: #2ecc8f; }
+
+  .rejim-section { display: none; }
+  .rejim-section.active { display: block; }
+
+  .plan-step { background: #080f0b; border: 1.5px solid #1a3028; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px; }
+  .plan-step-num { width: 26px; height: 26px; border-radius: 50%; background: #1D9E75; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .plan-step-text { font-size: 13px; color: #c8e8d8; line-height: 1.6; }
+  .plan-step.done-step { opacity: 0.5; }
+  .plan-step.done-step .plan-step-text { text-decoration: line-through; }
+
+  .rejim-mini-quiz { background: #080f0b; border: 1.5px solid #1a3028; border-radius: 14px; padding: 1rem; }
+  .rejim-quiz-q { font-size: 15px; font-weight: 600; color: #e8f5f0; margin-bottom: 12px; }
+  .rejim-quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .rejim-opt { padding: 11px 14px; border-radius: 10px; border: 1.5px solid #1a3028; background: #0d1a12; color: #c8e8d8; font-size: 14px; cursor: pointer; text-align: left; transition: all 0.2s; }
+  .rejim-opt:hover { border-color: #1D9E75; color: #2ecc8f; }
+  .rejim-opt.correct { background: #0d2018; border-color: #1D9E75; color: #2ecc8f; }
+  .rejim-opt.wrong { background: #2a0d0d; border-color: #E24B4A; color: #ff7070; }
+
+  .add-maqsad-form { background: #080f0b; border: 1.5px solid #1a3028; border-radius: 14px; padding: 1rem; margin-bottom: 12px; }
+  .add-maqsad-input { width: 100%; padding: 11px 14px; background: #0a1510; border: 1.5px solid #1a3028; border-radius: 10px; color: #e8f5f0; font-size: 14px; outline: none; margin-bottom: 10px; transition: border 0.2s; font-family: inherit; }
+  .add-maqsad-input:focus { border-color: #1D9E75; }
+  .add-maqsad-input::placeholder { color: #3a6050; }
+  .add-maqsad-label { font-size: 12px; color: #5a8a72; margin-bottom: 6px; display: block; }
+
+  .maqsad-item { cursor: pointer; }
+  .maqsad-item:hover { border-color: #1D9E75; }
+  .maqsad-open-btn { font-size: 11px; color: #1D9E75; background: #0d2018; border: 1px solid #1a3028; border-radius: 6px; padding: 2px 8px; cursor: pointer; margin-left: 4px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- PROFIL MODAL -->
+  <div class="rejim-overlay hidden" id="profilOverlay" onclick="if(event.target===this)closeProfilModal()">
+    <div class="rejim-sheet" style="max-height:60vh;">
+      <div class="rejim-handle"></div>
+      <div style="font-size:18px; font-weight:700; color:#e8f5f0; margin-bottom:16px;">👤 Profil</div>
+      <label class="add-maqsad-label">Ismingiz</label>
+      <input class="add-maqsad-input" id="profilIsm" placeholder="Ismingizni kiriting..." maxlength="30" />
+      <label class="add-maqsad-label" style="margin-top:8px;">Maqsad (qisqa)</label>
+      <input class="add-maqsad-input" id="profilMaqsad" placeholder="Masalan: Qur'onni yaxshi o'qimoqchiman" maxlength="60" />
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button class="btn-green" onclick="saveProfilModal()" style="flex:1;">✓ Saqlash</button>
+        <button class="btn-green" onclick="closeProfilModal()" style="background:#1a2a20; color:#5a8a72; border:1px solid #1a3028; flex:1;">Bekor</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="header" style="cursor:pointer;" onclick="openProfilModal()">
+    <div class="bismillah">﷽</div>
+    <h1>Qur'on O'rganish</h1>
+    <div id="headerProfil" style="font-size:14px; color:#2ecc8f; margin-top:6px; font-weight:600;"></div>
+    <p id="headerSubtitle">Boshlang'ichlar uchun qulay platforma · <span style="color:#1D9E75;">👤 Profil</span></p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('harflar', this)">📝 Harflar</button>
+    <button class="tab" onclick="showTab('suralar', this)">📖 Suralar</button>
+    <button class="tab" onclick="showTab('test', this)">✅ Test</button>
+    <button class="tab" onclick="showTab('maqsad', this)">🎯 Maqsadlar</button>
+    <button class="tab" onclick="showTab('savol', this)">💬 Savol-Javob</button>
+  </div>
+
+  <!-- HARFLAR -->
+  <div id="harflar" class="section active">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="harfCount">0</div><div class="stat-label">O'rganildi</div></div>
+      <div class="stat-card"><div class="stat-num">28</div><div class="stat-label">Jami harf</div></div>
+      <div class="stat-card"><div class="stat-num" id="harfPct">0%</div><div class="stat-label">Bajarildi</div></div>
+    </div>
+    <div id="harfDetail" class="harf-detail"></div>
+    <!-- CHIZISH PANELI -->
+    <div id="drawPanel" class="draw-panel">
+      <div class="draw-panel-title">✏️ Harfni chizing — tekshiramiz!</div>
+      <div class="draw-wrap">
+        <div class="harf-ghost" id="ghostHarf"></div>
+        <canvas id="drawCanvas" width="640" height="520"></canvas>
+      </div>
+      <div class="draw-controls">
+        <button class="draw-btn draw-btn-clear" onclick="clearCanvas()">🗑 Tozalash</button>
+        <button class="draw-btn draw-btn-check" id="checkBtn" onclick="checkDrawing()" disabled>✅ Tekshirish</button>
+        <div class="stroke-size">
+          <span>Qalinlik:</span>
+          <input type="range" id="strokeSize" min="4" max="24" value="10" oninput="updateStroke(this.value)" />
+        </div>
+      </div>
+      <div class="draw-result" id="drawResult"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Arabcha harflar — bosing va o'rganing</div>
+      <div class="harf-grid" id="harfGrid"></div>
+    </div>
+  </div>
+
+  <!-- SURALAR -->
+  <div id="suralar" class="section">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="suraCount">0</div><div class="stat-label">Yodlandi</div></div>
+      <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">Maqsad</div></div>
+      <div class="stat-card"><div class="stat-num" id="suraPct">0%</div><div class="stat-label">Bajarildi</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Qisqa suralar — bosib o'qing va yodlang</div>
+      <div class="sura-list" id="suraList"></div>
+    </div>
+  </div>
+
+  <!-- TEST -->
+  <div id="test" class="section">
+    <div class="card">
+      <div class="section-title">Bilimingizni sinab ko'ring</div>
+      <div class="progress-bar"><div class="progress-fill" id="quizProg" style="width:0%"></div></div>
+      <div style="font-size:13px; color:#888; margin-bottom:8px;" id="quizCounter">Savol 1 / 8</div>
+    </div>
+    <div class="quiz-card" id="quizCard">
+      <div class="quiz-question" id="quizQ">Qaysi harf?</div>
+      <div style="display:flex; gap:8px; justify-content:center; margin-bottom:6px;">
+        <button class="quiz-hint-btn" id="showArabBtn" onclick="showArabHint()">👁 Harfni ko'rsat</button>
+        <button class="quiz-hint-btn" id="showHintBtn" onclick="showHint()">💡 Podkazka</button>
+      </div>
+      <div class="quiz-arab" id="quizArab" style="display:none;">ا</div>
+      <div class="quiz-hint-box" id="quizHintBox" style="display:none;"></div>
+      <div class="quiz-options" id="quizOpts"></div>
+      <div id="quizRes" style="margin-top:14px; font-size:15px; font-weight:500; display:none;"></div>
+    </div>
+  </div>
+
+  <!-- MAQSADLAR -->
+  <div id="maqsad" class="section">
+    <!-- O'z maqsadini yozish formasi -->
+    <div class="card">
+      <div class="section-title">✏️ O'z maqsadingizni yozing</div>
+      <div class="add-maqsad-form">
+        <label class="add-maqsad-label">Nimani o'rganmoqchisiz? (o'z so'zlaringiz bilan)</label>
+        <input class="add-maqsad-input" id="customMaqsadInput" placeholder="Masalan: 1 oyda 10 surani yodlamoqchiman..." onkeydown="if(event.key==='Enter') addCustomMaqsad()" maxlength="120" />
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-green" onclick="addCustomMaqsad()" style="font-size:13px; padding:9px 16px;">+ Qo'shish</button>
+          <button class="btn-green" onclick="addCustomMaqsadWithPlan()" style="font-size:13px; padding:9px 16px; background:#0d5a3f; border:1.5px solid #1D9E75;">🤖 AI bilan plan tuz</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🎯 Maqsadlarim</div>
+      <div id="maqsadList"></div>
+      <div style="margin-top:10px;">
+        <button class="btn-green" onclick="resetAllMaqsad()" style="background:#2a1515; color:#ff9090; border:1px solid #4a2020; font-size:13px; padding:9px 16px;">🗑 Hammasini tozala</button>
+      </div>
+    </div>
+    <div class="card" id="maqsadStatCard">
+      <div class="section-title">📊 Umumiy natija</div>
+      <div id="maqsadStats"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">📋 Tavsiya etilgan maqsadlar</div>
+      <div id="tavsiyaMaqsadlar"></div>
+    </div>
+  </div>
+
+  <!-- MAQSAD REJIM MODAL -->
+  <div class="rejim-overlay hidden" id="rejimOverlay" onclick="closeRejim(event)">
+    <div class="rejim-sheet" id="rejimSheet">
+      <div class="rejim-handle"></div>
+      <div class="rejim-header">
+        <div class="rejim-icon" id="rejimIcon">🎯</div>
+        <div>
+          <div class="rejim-title" id="rejimTitle">Maqsad</div>
+          <div class="rejim-subtitle" id="rejimSubtitle">Ushbu maqsadga erishish uchun rejim</div>
+        </div>
+        <button class="rejim-close" onclick="closeRejimDirect()">✕ Yopish</button>
+      </div>
+
+      <div class="rejim-tabs" id="rejimTabs">
+        <button class="rejim-tab active" onclick="switchRejimTab('plan', this)">📋 Plan</button>
+        <button class="rejim-tab" onclick="switchRejimTab('mashq', this)">🏋️ Mashq</button>
+        <button class="rejim-tab" onclick="switchRejimTab('test', this)">✅ Mini-test</button>
+        <button class="rejim-tab" onclick="switchRejimTab('ai-mashq', this)">🤖 AI Savol</button>
+      </div>
+
+      <!-- PLAN BO'LIMI -->
+      <div class="rejim-section active" id="rejim-plan">
+        <div id="planContent" style="font-size:13px; color:#5a8a72;">Plan yuklanmoqda...</div>
+      </div>
+
+      <!-- MASHQ BO'LIMI -->
+      <div class="rejim-section" id="rejim-mashq">
+        <div id="mashqContent"></div>
+      </div>
+
+      <!-- MINI TEST BO'LIMI -->
+      <div class="rejim-section" id="rejim-test">
+        <div id="rejimTestContent"></div>
+      </div>
+
+      <!-- AI MASHQ BO'LIMI -->
+      <div class="rejim-section" id="rejim-ai-mashq">
+        <div id="aiMashqContent">
+          <div style="color:#5a8a72; text-align:center; padding:1.5rem;">🤖 Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVOL JAVOB -->
+  <div id="savol" class="section">
+    <div class="info-note">⚠️ Savol-Javob bo'limi uchun internet kerak. Internetingiz bo'lsa ishlaydi.</div>
+    <div class="ai-box">
+      <div class="section-title">🤖 AI Ustoz — Savol bering</div>
+      <div class="ai-messages" id="aiMsgs">
+        <div class="ai-msg bot">Assalomu alaykum! Men sizning Qur'on o'rganishingizga yordam beraman. Qur'on, arabcha harflar, suralar yoki islom haqida istalgan savolni bering! 😊</div>
+      </div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="aiInput" placeholder="Savolingizni yozing..." onkeydown="if(event.key==='Enter') sendMsg()" />
+        <button class="ai-send" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const harflar = [
+  {arab:'ا',uz:'Alif',trans:'A',misol:"Alanga kabi - 'A' tovushi"},
+  {arab:'ب',uz:'Ba',trans:'B',misol:"Ba - 'B' tovushi"},
+  {arab:'ت',uz:'Ta',trans:'T',misol:"Ta - 'T' tovushi"},
+  {arab:'ث',uz:'Sa',trans:'S',misol:"Sa - inglizcha 'th' tovushi"},
+  {arab:'ج',uz:'Jim',trans:'J',misol:"Jim - 'J' tovushi"},
+  {arab:'ح',uz:'Ha',trans:'H',misol:"Ha - tomoqdan chuqur 'H'"},
+  {arab:'خ',uz:'Xo',trans:'X',misol:"Xo - 'X' tovushi"},
+  {arab:'د',uz:'Dal',trans:'D',misol:"Dal - 'D' tovushi"},
+  {arab:'ذ',uz:'Zal',trans:'Z',misol:"Zal - 'Z' tovushi"},
+  {arab:'ر',uz:'Ra',trans:'R',misol:"Ra - 'R' tovushi"},
+  {arab:'ز',uz:'Zay',trans:'Z',misol:"Zay - 'Z' tovushi"},
+  {arab:'س',uz:'Sin',trans:'S',misol:"Sin - 'S' tovushi"},
+  {arab:'ش',uz:'Shin',trans:'Sh',misol:"Shin - 'Sh' tovushi"},
+  {arab:'ص',uz:'Sod',trans:'S',misol:"Sod - qalin 'S' tovushi"},
+  {arab:'ض',uz:'Zod',trans:'Z',misol:"Zod - qalin 'Z' tovushi"},
+  {arab:'ط',uz:'To',trans:'T',misol:"To - qalin 'T' tovushi"},
+  {arab:'ظ',uz:'Zo',trans:'Z',misol:"Zo - qalin 'Z' tovushi"},
+  {arab:'ع',uz:"Ayn",trans:"'",misol:"Ayn - tomoqdan 'A' tovushi"},
+  {arab:'غ',uz:"G'ayn",trans:'G',misol:"G'ayn - 'G'' tovushi"},
+  {arab:'ف',uz:'Fa',trans:'F',misol:"Fa - 'F' tovushi"},
+  {arab:'ق',uz:'Qof',trans:'Q',misol:"Qof - 'Q' tovushi"},
+  {arab:'ك',uz:'Kof',trans:'K',misol:"Kof - 'K' tovushi"},
+  {arab:'ل',uz:'Lom',trans:'L',misol:"Lom - 'L' tovushi"},
+  {arab:'م',uz:'Mim',trans:'M',misol:"Mim - 'M' tovushi"},
+  {arab:'ن',uz:'Nun',trans:'N',misol:"Nun - 'N' tovushi"},
+  {arab:'ه',uz:'Ha',trans:'H',misol:"Ha - yumshoq 'H' tovushi"},
+  {arab:'و',uz:'Vov',trans:'V',misol:"Vov - 'V/U' tovushi"},
+  {arab:'ي',uz:'Ya',trans:'Y',misol:"Ya - 'Y' tovushi"}
+];
+
+const suralar = [
+  {num:1,arab:"الفاتحة",uz:"Al-Fotiha",info:"7 oyat • Ochuvchi sura",
+   matn:"بِسۡمِ اللّٰهِ الرَّحۡمٰنِ الرَّحِيۡمِ ۝ اَلۡحَمۡدُ لِلّٰهِ رَبِّ الۡعٰلَمِيۡنَ ۝ الرَّحۡمٰنِ الرَّحِيۡمِ ۝ مٰلِكِ يَوۡمِ الدِّيۡنِ ۝ اِيَّاكَ نَعۡبُدُ وَاِيَّاكَ نَسۡتَعِيۡنُ ۝ اِهۡدِنَا الصِّرَاطَ الۡمُسۡتَقِيۡمَ ۝ صِرَاطَ الَّذِيۡنَ اَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ الۡمَغۡضُوۡبِ عَلَيۡهِمۡ وَلَا الضَّآلِّيۡنَ",
+   tarjima:"Mehribon va Rahmdil Alloh nomi bilan. Hamd olam va olamlar Rabbisi Allohga xos. Mehribon va Rahmdil (Allohga). Din kunining Egasiga. Faqat Senga ibodat qilamiz va faqat Sendan madad so'raymiz. Bizni to'g'ri yo'lga hidoyat qilgin. O'zingiz ne'mat bergan zotlarning yo'liga — g'azabga uchragan va adashganlarnikiiga emas."},
+  {num:112,arab:"الإخلاص",uz:"Al-Ixlos",info:"4 oyat • Tawhid surasi",
+   matn:"قُلۡ هُوَ اللّٰهُ اَحَدٌ ۝ اَللّٰهُ الصَّمَدُ ۝ لَمۡ يَلِدۡ وَلَمۡ يُوۡلَدۡ ۝ وَلَمۡ يَكُنۡ لَّهٗ كُفُوًا اَحَدٌ",
+   tarjima:"Ayt: U Alloh — Birdir. Alloh — Samaddur (hamma muhtoj Unga, U esa hech kimga muhtoj emas). U tug'magan va tug'ilmagan. Va Unga hech kim teng bo'lmagan."},
+  {num:113,arab:"الفلق",uz:"Al-Falaq",info:"5 oyat • Himoya surasi",
+   matn:"قُلۡ اَعُوۡذُ بِرَبِّ الۡفَلَقِ ۝ مِنۡ شَرِّ مَا خَلَقَ ۝ وَمِنۡ شَرِّ غَاسِقٍ اِذَا وَقَبَ ۝ وَمِنۡ شَرِّ النَّفّٰثٰتِ فِى الۡعُقَدِ ۝ وَمِنۡ شَرِّ حَاسِدٍ اِذَا حَسَدَ",
+   tarjima:"Ayt: Tongning Rabbisidan panoh tilaymen. U yaratgan narsalarning yovuzligidan. Qorong'ilik qoplagan tunning yovuzligidan. Tugunlarga puflaydiganlarning yovuzligidan. Hasad qilgan hasadchining yovuzligidan."},
+  {num:114,arab:"الناس",uz:"An-Nos",info:"6 oyat • Odamlar surasi",
+   matn:"قُلۡ اَعُوۡذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ اِلٰهِ النَّاسِ ۝ مِنۡ شَرِّ الۡوَسۡوَاسِ الۡخَنَّاسِ ۝ الَّذِىۡ يُوَسۡوِسُ فِىۡ صُدُوۡرِ النَّاسِ ۝ مِنَ الۡجِنَّةِ وَالنَّاسِ",
+   tarjima:"Ayt: Odamlarning Rabbisidan panoh tilaymen. Odamlarning Podshohidan. Odamlarning Ilohidan. Yashirinib vasvasa qiluvchining yovuzligidan. U odamlarning ko'kragiga vasvasa solib turadi. Jinlardan va odamlardan."},
+  {num:108,arab:"الكوثر",uz:"Al-Kavsar",info:"3 oyat • Eng qisqa sura",
+   matn:"اِنَّآ اَعۡطَيۡنٰكَ الۡكَوۡثَرَ ۝ فَصَلِّ لِرَبِّكَ وَانۡحَرۡ ۝ اِنَّ شَانِئَكَ هُوَ الۡاَبۡتَرُ",
+   tarjima:"Biz senga Kavsarni berdik. Sen Rabbing uchun namoz o'qi va qurbon qil. Albatta seni yomon ko'ruvchining o'zi nasli qurib qolgandir."},
+  {num:103,arab:"العصر",uz:"Al-Asr",info:"3 oyat • Vaqt surasi",
+   matn:"وَالۡعَصۡرِ ۝ اِنَّ الۡاِنۡسَانَ لَفِىۡ خُسۡرٍ ۝ اِلَّا الَّذِيۡنَ اٰمَنُوۡا وَعَمِلُوا الصّٰلِحٰتِ وَتَوَاصَوۡا بِالۡحَقِّ وَتَوَاصَوۡا بِالصَّبۡرِ",
+   tarjima:"Asrga qasam! Albatta inson ziyondadir. Magar imon keltirgan, solih amal qilgan, bir-birlarini haq bilan va sabr bilan vasiyat qilganlar bundan mustasno."},
+  {num:110,arab:"النصر",uz:"An-Nasr",info:"3 oyat • G'alaba surasi",
+   matn:"اِذَا جَآءَ نَصۡرُ اللّٰهِ وَالۡفَتۡحُ ۝ وَرَاَيۡتَ النَّاسَ يَدۡخُلُوۡنَ فِىۡ دِيۡنِ اللّٰهِ اَفۡوَاجًا ۝ فَسَبِّحۡ بِحَمۡدِ رَبِّكَ وَاسۡتَغۡفِرۡهُ اِنَّهٗ كَانَ تَوَّابًا",
+   tarjima:"Allohning yordami va g'alaba kelganida. Va odamlarning Alloh dini ga to'p-to'p kirayotganini ko'rganingda. Rabbingga hamd bilan tasbeh ayt va Undan mag'firat so'ra. Albatta U tavbalarni qabul qiluvchidir."},
+  {num:111,arab:"المسد",uz:"Al-Masad",info:"5 oyat • Ibratomuz sura",
+   matn:"تَبَّتۡ يَدَآ اَبِىۡ لَهَبٍ وَّتَبَّ ۝ مَآ اَغۡنٰى عَنۡهُ مَالُهٗ وَمَا كَسَبَ ۝ سَيَصۡلٰى نَارًا ذَاتَ لَهَبٍ",
+   tarjima:"Abu Lahab ikki qo'li qurisin va quridi! Unga moli va qozongan narsalari foyda bermadi. U alangali olovga kiradi."},
+  {num:109,arab:"الكافرون",uz:"Al-Kofirun",info:"6 oyat • Kofirlar surasi",
+   matn:"قُلۡ يٰٓاَيُّهَا الۡكٰفِرُوۡنَ ۝ لَآ اَعۡبُدُ مَا تَعۡبُدُوۡنَ ۝ وَلَآ اَنۡتُمۡ عٰبِدُوۡنَ مَآ اَعۡبُدُ ۝ وَلَآ اَنَا۠ عَابِدٌ مَّا عَبَدتُّمۡ ۝ وَلَآ اَنۡتُمۡ عٰبِدُوۡنَ مَآ اَعۡبُدُ ۝ لَكُمۡ دِيۡنُكُمۡ وَلِىَ دِيۡنِ",
+   tarjima:"Ayt: Ey kofirlar! Men sizlar ibodat qilayotgan narsaga ibodat qilmayman. Siz ham men ibodat qilayotgan narsaga ibodat qiluvchi emassiz. Sizlarga o'z diningiz, menga o'z dinim."},
+  {num:107,arab:"الماعون",uz:"Al-Mo'un",info:"7 oyat • Yaxshilik surasi",
+   matn:"اَرَءَيۡتَ الَّذِىۡ يُكَذِّبُ بِالدِّيۡنِ ۝ فَذٰلِكَ الَّذِىۡ يَدُعُّ الۡيَتِيۡمَ ۝ وَلَا يَحُضُّ عَلٰى طَعَامِ الۡمِسۡكِيۡنِ",
+   tarjima:"Din kunini yolg'on deydiganini ko'rdingmi? O'sha yatimni itarib yuborguvchidir. Va miskinni ovqatlantirish haqida targ'ib qilmaydi."}
+];
+
+let learnedH = JSON.parse(localStorage.getItem('learnedH') || '[]');
+let learnedS = JSON.parse(localStorage.getItem('learnedS') || '[]');
+let learnedHSet = new Set(learnedH);
+let learnedSSet = new Set(learnedS);
+let openSura = -1;
+let quizQs = [], currentQ = 0, answered = false, correctCount = 0;
+
+function save() {
+  localStorage.setItem('learnedH', JSON.stringify([...learnedHSet]));
+  localStorage.setItem('learnedS', JSON.stringify([...learnedSSet]));
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'test') startQuiz();
+  if (tab === 'maqsad') renderMaqsadlar();
+}
+
+function renderHarflar() {
+  const grid = document.getElementById('harfGrid');
+  grid.innerHTML = harflar.map((h, i) => `
+    <div class="harf-btn ${learnedHSet.has(i) ? 'done' : ''}" onclick="showHarf(${i})">
+      <span class="harf-arab">${h.arab}</span>
+      <span class="harf-uz">${h.uz}</span>
+    </div>
+  `).join('');
+  document.getElementById('harfCount').textContent = learnedHSet.size;
+  document.getElementById('harfPct').textContent = Math.round(learnedHSet.size / 28 * 100) + '%';
+}
+
+function showHarf(i) {
+  const h = harflar[i];
+  const d = document.getElementById('harfDetail');
+  d.className = 'harf-detail show';
+  d.innerHTML = `
+    <div class="harf-big">${h.arab}</div>
+    <div class="harf-name">${h.uz} — "${h.trans}"</div>
+    <div class="harf-misol">${h.misol}</div>
+    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;">
+      <button class="btn-green" onclick="markHarf(${i})">${learnedHSet.has(i) ? '✓ O\'rganildi!' : 'O\'rgandim!'}</button>
+      <button class="btn-green" style="background:#0d5a3f; border:1.5px solid #1D9E75;" onclick="showDrawPanel(${i})">✏️ Chizib ko'r</button>
+    </div>
+  `;
+  d.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function markHarf(i) {
+  learnedHSet.add(i);
+  save();
+  renderHarflar();
+  showHarf(i);
+}
+
+function renderSuralar() {
+  const list = document.getElementById('suraList');
+  list.innerHTML = suralar.map((s, i) => `
+    <div>
+      <div class="sura-item ${learnedSSet.has(i) ? 'learned' : ''}" onclick="toggleSura(${i})">
+        <div class="sura-left">
+          <div class="sura-num ${learnedSSet.has(i) ? 'learned' : ''}">${s.num}</div>
+          <div>
+            <div class="sura-name">${s.uz} <span class="badge">${s.info}</span></div>
+          </div>
+        </div>
+        <div class="sura-arab">${s.arab}</div>
+      </div>
+      <div id="sura${i}" class="sura-detail">
+        <div class="sura-text">${s.matn}</div>
+        <div class="sura-tarjima">📖 <em>${s.tarjima}</em></div>
+        <button class="btn-green" onclick="markSura(${i})">${learnedSSet.has(i) ? '✓ Yodlangan!' : 'Yodladim!'}</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('suraCount').textContent = learnedSSet.size;
+  document.getElementById('suraPct').textContent = Math.round(learnedSSet.size / 20 * 100) + '%';
+}
+
+function toggleSura(i) {
+  if (openSura !== -1 && openSura !== i) {
+    document.getElementById('sura' + openSura).classList.remove('show');
+  }
+  const el = document.getElementById('sura' + i);
+  el.classList.toggle('show');
+  openSura = el.classList.contains('show') ? i : -1;
+}
+
+function markSura(i) {
+  learnedSSet.add(i);
+  save();
+  renderSuralar();
+  document.getElementById('sura' + i).classList.add('show');
+  openSura = i;
+}
+
+function startQuiz() {
+  quizQs = [...harflar].sort(() => Math.random() - 0.5).slice(0, 8);
+  currentQ = 0;
+  correctCount = 0;
+  // Kartani qayta tiklash
+  document.getElementById('quizCard').innerHTML = `
+    <div class="quiz-question" id="quizQ">Qaysi harf?</div>
+    <div style="display:flex; gap:8px; justify-content:center; margin-bottom:6px;">
+      <button class="quiz-hint-btn" id="showArabBtn" onclick="showArabHint()">👁 Harfni ko'rsat</button>
+      <button class="quiz-hint-btn" id="showHintBtn" onclick="showHint()">💡 Podkazka</button>
+    </div>
+    <div class="quiz-arab" id="quizArab" style="display:none;">ا</div>
+    <div class="quiz-hint-box" id="quizHintBox" style="display:none;"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+    <div id="quizRes" style="margin-top:14px; font-size:15px; font-weight:500; display:none;"></div>
+  `;
+  showQuestion();
+}
+
+function showArabHint() {
+  const arabEl = document.getElementById('quizArab');
+  arabEl.style.display = arabEl.style.display === 'none' ? 'block' : 'none';
+}
+
+function showHint() {
+  if (currentQ >= quizQs.length) return;
+  const q = quizQs[currentQ];
+  const hintEl = document.getElementById('quizHintBox');
+  if (hintEl.style.display === 'none' || !hintEl.style.display) {
+    hintEl.style.display = 'block';
+    hintEl.innerHTML = `<strong>${q.arab}</strong> — "${q.uz}" — transcription: <strong>${q.trans}</strong><br><span style="opacity:0.8">${q.misol}</span>`;
+  } else {
+    hintEl.style.display = 'none';
+  }
+}
+
+function showQuestion() {
+  answered = false;
+  // Hint va arabni yashirish
+  const arabEl = document.getElementById('quizArab');
+  const hintEl = document.getElementById('quizHintBox');
+  const resEl = document.getElementById('quizRes');
+  if (arabEl) arabEl.style.display = 'none';
+  if (hintEl) hintEl.style.display = 'none';
+  if (resEl) resEl.style.display = 'none';
+
+  if (currentQ >= quizQs.length) {
+    document.getElementById('quizCard').innerHTML = `
+      <div style="text-align:center; padding:2rem 1rem;">
+        <div style="font-size:60px; margin-bottom:16px;">${correctCount >= 6 ? '🎉' : correctCount >= 4 ? '👍' : '📚'}</div>
+        <div style="font-size:22px; font-weight:700; color:#1D9E75; margin-bottom:8px;">${correctCount >= 6 ? 'Barakalla!' : correctCount >= 4 ? "Yaxshi bo'ldi!" : 'Ko\'proq o\'rganing!'}</div>
+        <div style="font-size:16px; color:#7ab898; margin-bottom:20px;">To'g'ri: <strong style="color:#2ecc8f">${correctCount}</strong> / ${quizQs.length}</div>
+        <button class="btn-green" onclick="startQuiz()">🔄 Qayta boshlash</button>
+      </div>
+    `;
+    return;
+  }
+  const q = quizQs[currentQ];
+  document.getElementById('quizProg').style.width = (currentQ / quizQs.length * 100) + '%';
+  document.getElementById('quizCounter').textContent = `Savol ${currentQ + 1} / ${quizQs.length}  ✓ ${correctCount}`;
+  document.getElementById('quizQ').textContent = `"${q.uz}" harfi qaysi arabcha belgi?`;
+  if (arabEl) arabEl.textContent = q.arab;
+
+  const wrong = harflar.filter(h => h.uz !== q.uz).sort(() => Math.random() - 0.5).slice(0, 3);
+  const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
+
+  document.getElementById('quizOpts').innerHTML = opts.map(o => `
+    <div class="quiz-opt" onclick="checkAns('${o.arab}','${q.arab}')">
+      <span style="font-size:34px; display:block;">${o.arab}</span>
+    </div>
+  `).join('');
+}
+
+function checkAns(sel, correct) {
+  if (answered) return;
+  answered = true;
+  if (sel === correct) correctCount++;
+  document.querySelectorAll('.quiz-opt').forEach(o => {
+    const arab = o.querySelector('span')?.textContent?.trim();
+    if (arab === correct) o.classList.add('correct');
+    else if (arab === sel && sel !== correct) o.classList.add('wrong');
+  });
+  const res = document.getElementById('quizRes');
+  res.style.display = 'block';
+  if (sel === correct) {
+    res.innerHTML = '<span style="color:#2ecc8f">✓ To\'g\'ri! Zo\'r!</span>';
+  } else {
+    res.innerHTML = `<span style="color:#ff7070">✗ Noto'g'ri. To'g'ri javob: <strong style="font-size:20px">${correct}</strong></span>`;
+  }
+  setTimeout(() => { currentQ++; showQuestion(); }, 1800);
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('aiInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  const msgs = document.getElementById('aiMsgs');
+  msgs.innerHTML += `<div class="ai-msg user">${text}</div>`;
+
+  const loading = document.createElement('div');
+  loading.className = 'ai-msg loading';
+  loading.textContent = 'Javob yozilmoqda...';
+  msgs.appendChild(loading);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: "Sen Qur'on o'rganishga yordam beruvchi mehriban ustozsan. FAQAT o'zbek tilida javob ber. Qisqa, tushunarli va iliq javob ber. Qur'on suralar, arabcha harflar, tajvid, namoz va islomiy mavzular bo'yicha savollarga javob ber. Agar boshqa mavzu bo'lsa, muloyimlik bilan Qur'on mavzusiga qayt.",
+        messages: [{role:"user", content: text}]
+      })
+    });
+    const data = await res.json();
+    const answer = data.content?.[0]?.text || "Kechirasiz, hozir javob bera olmadim.";
+    loading.className = 'ai-msg bot';
+    loading.textContent = answer;
+  } catch(e) {
+    loading.className = 'ai-msg bot';
+    loading.textContent = "Internet ulanishida muammo bor. Iltimos, internetingizni tekshiring va qayta urinib ko'ring.";
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ===================== CHIZISH FUNKSIYASI =====================
+let currentHarfIndex = -1;
+let drawCtx = null;
+let isDrawing = false;
+let hasDrawn = false;
+let strokeColor = '#2ecc8f';
+let strokeWidth = 10;
+let lastX = 0, lastY = 0;
+
+function initCanvas() {
+  const canvas = document.getElementById('drawCanvas');
+  if (!canvas) return;
+  drawCtx = canvas.getContext('2d');
+  drawCtx.lineCap = 'round';
+  drawCtx.lineJoin = 'round';
+  drawCtx.strokeStyle = strokeColor;
+  drawCtx.lineWidth = strokeWidth;
+  clearCanvas();
+
+  // Mouse hodisalari (kompyuter uchun)
+  canvas.addEventListener('mousedown', e => { isDrawing = true; const p = getPos(e, canvas); lastX = p.x; lastY = p.y; recordPoint(p.x, p.y, true); });
+  canvas.addEventListener('mousemove', e => { if (!isDrawing) return; draw(e, canvas); });
+  canvas.addEventListener('mouseup', () => stopDraw());
+  canvas.addEventListener('mouseleave', () => stopDraw());
+
+  // Touch hodisalari (telefon + S Pen uchun)
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    isDrawing = true;
+    const p = getPos(e.touches[0], canvas);
+    lastX = p.x; lastY = p.y;
+    recordPoint(p.x, p.y, true);
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    draw(e.touches[0], canvas);
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => stopDraw());
+
+  // S Pen (Pointer events) — S25 Ultra uchun
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'pen' || e.pointerType === 'mouse') {
+      e.preventDefault();
+      isDrawing = true;
+      const p = getPos(e, canvas);
+      lastX = p.x; lastY = p.y;
+      recordPoint(p.x, p.y, true);
+      if (e.pressure > 0) {
+        drawCtx.lineWidth = strokeWidth * (0.5 + e.pressure * 1.5);
+      }
+    }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!isDrawing) return;
+    if (e.pointerType === 'pen' || e.pointerType === 'mouse') {
+      e.preventDefault();
+      if (e.pressure > 0) {
+        drawCtx.lineWidth = strokeWidth * (0.5 + e.pressure * 1.5);
+      }
+      draw(e, canvas);
+    }
+  });
+  canvas.addEventListener('pointerup', () => stopDraw());
+}
+
+function getPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+  const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+function draw(e, canvas) {
+  const p = getPos(e, canvas);
+  drawCtx.beginPath();
+  drawCtx.moveTo(lastX, lastY);
+  drawCtx.lineTo(p.x, p.y);
+  drawCtx.stroke();
+  recordPoint(p.x, p.y, false);
+  lastX = p.x; lastY = p.y;
+  if (!hasDrawn) {
+    hasDrawn = true;
+    document.getElementById('checkBtn').disabled = false;
+  }
+}
+
+function stopDraw() {
+  isDrawing = false;
+  drawCtx.lineWidth = strokeWidth;
+}
+
+function clearCanvas() {
+  if (!drawCtx) return;
+  const canvas = document.getElementById('drawCanvas');
+  drawCtx.fillStyle = '#080f0b';
+  drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+  hasDrawn = false;
+  strokePoints = []; strokeSegments = []; currentSegment = [];
+  document.getElementById('checkBtn').disabled = true;
+  const res = document.getElementById('drawResult');
+  res.style.display = 'none';
+  res.className = 'draw-result';
+}
+
+function updateStroke(val) {
+  strokeWidth = parseInt(val);
+  if (drawCtx) drawCtx.lineWidth = strokeWidth;
+}
+
+function showDrawPanel(harfIndex) {
+  currentHarfIndex = harfIndex;
+  strokePoints = []; strokeSegments = []; currentSegment = [];
+  const panel = document.getElementById('drawPanel');
+  panel.classList.add('show');
+  document.getElementById('ghostHarf').textContent = harflar[harfIndex].arab;
+  document.getElementById('drawResult').style.display = 'none';
+  document.getElementById('drawResult').className = 'draw-result';
+  // Canvas-ni yangilash uchun clone trick — event listenerlarni tozalash
+  const oldCanvas = document.getElementById('drawCanvas');
+  const newCanvas = oldCanvas.cloneNode(true);
+  oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+  drawCtx = null; isDrawing = false; hasDrawn = false;
+  setTimeout(() => {
+    initCanvas();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 30);
+}
+
+// Stroke (chiziq) tahlili uchun ma'lumotlar
+let strokePoints = [];    // barcha chizilgan nuqtalar
+let strokeSegments = [];  // har bir alohida chiziq
+let currentSegment = [];
+
+// draw funksiyasini kengaytirish uchun nuqtalarni yig'amiz
+function recordPoint(x, y, newStroke) {
+  if (newStroke) {
+    if (currentSegment.length > 2) strokeSegments.push([...currentSegment]);
+    currentSegment = [{x, y}];
+  } else {
+    currentSegment.push({x, y});
+  }
+  strokePoints.push({x, y});
+}
+
+function checkDrawing() {
+  if (!hasDrawn || currentHarfIndex < 0) return;
+  const harf = harflar[currentHarfIndex];
+  const canvas = document.getElementById('drawCanvas');
+  const res = document.getElementById('drawResult');
+  res.style.display = 'block';
+
+  // Oxirgi segmentni qo'shish
+  if (currentSegment.length > 2) strokeSegments.push([...currentSegment]);
+
+  // === TAHLIL ===
+  const W = canvas.width, H = canvas.height;
+
+  // 1. Chizilgan piksellar soni (qancha joy qoplagan)
+  const ctx = drawCtx;
+  const imgData = ctx.getImageData(0, 0, W, H).data;
+  let filledPixels = 0;
+  for (let i = 0; i < imgData.length; i += 4) {
+    const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+    // Fon qora (#080f0b) emas bo'lgan piksellar = chizilgan
+    if (r > 20 || g > 40 || b > 30) filledPixels++;
+  }
+  const fillRatio = filledPixels / (W * H);
+
+  // 2. Chiziq uzunligi
+  let totalLen = 0;
+  strokePoints.forEach((p, i) => {
+    if (i === 0) return;
+    const prev = strokePoints[i-1];
+    totalLen += Math.hypot(p.x - prev.x, p.y - prev.y);
+  });
+
+  // 3. Bounding box (harfning qancha joyni egallashi)
+  let minX = W, maxX = 0, minY = H, maxY = 0;
+  strokePoints.forEach(p => {
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+  });
+  const bboxW = maxX - minX, bboxH = maxY - minY;
+  const bboxRatio = bboxW / (bboxH || 1); // kenglik/balandlik nisbati
+
+  // 4. Segment (alohida chiziq) soni
+  const segCount = strokeSegments.length;
+
+  // === HAR BIR HARF UCHUN KUTILGAN XUSUSIYATLAR ===
+  const harfProfiles = {
+    'ا': { minLen: 80,  maxSegs: 2,  ratio: [0.1, 0.7],  tip: "Alif — to\'g\'ri vertikal chiziq. Yuqoridan pastga bir harakatda chizing." },
+    'ب': { minLen: 120, maxSegs: 3,  ratio: [1.5, 5.0],  tip: "Ba — gorizontal egri chiziq + bitta nuqta pastda." },
+    'ت': { minLen: 120, maxSegs: 4,  ratio: [1.5, 5.0],  tip: "Ta — Ba kabi, lekin ikki nuqta ustida." },
+    'ث': { minLen: 120, maxSegs: 5,  ratio: [1.5, 5.0],  tip: "Sa — Ba kabi, lekin uch nuqta ustida." },
+    'ج': { minLen: 100, maxSegs: 2,  ratio: [0.5, 2.0],  tip: "Jim — pastga egilgan chiziq + nuqta ichida." },
+    'ح': { minLen: 100, maxSegs: 2,  ratio: [0.8, 2.5],  tip: "Ha — ikki egri chiziq birga." },
+    'خ': { minLen: 100, maxSegs: 3,  ratio: [0.8, 2.5],  tip: "Xo — Ha kabi + yuqorida nuqta." },
+    'د': { minLen: 60,  maxSegs: 1,  ratio: [0.5, 2.0],  tip: "Dal — kichik burchakli chiziq, o\'ngga qaraydi." },
+    'ذ': { minLen: 60,  maxSegs: 2,  ratio: [0.5, 2.0],  tip: "Zal — Dal kabi + yuqorida nuqta." },
+    'ر': { minLen: 60,  maxSegs: 1,  ratio: [0.3, 1.5],  tip: "Ra — pastga egilgan yumshoq chiziq." },
+    'ز': { minLen: 60,  maxSegs: 2,  ratio: [0.3, 1.5],  tip: "Zay — Ra kabi + nuqta ustida." },
+    'س': { minLen: 150, maxSegs: 1,  ratio: [2.0, 7.0],  tip: "Sin — uch tish shaklidagi gorizontal chiziq." },
+    'ش': { minLen: 150, maxSegs: 4,  ratio: [2.0, 7.0],  tip: "Shin — Sin kabi + uch nuqta ustida." },
+    'ص': { minLen: 130, maxSegs: 1,  ratio: [1.5, 4.0],  tip: "Sod — oval + uzun dum o\'ngda." },
+    'ض': { minLen: 130, maxSegs: 2,  ratio: [1.5, 4.0],  tip: "Zod — Sod kabi + nuqta ustida." },
+    'ط': { minLen: 120, maxSegs: 2,  ratio: [1.0, 3.0],  tip: "To — oval + vertikal chiziq." },
+    'ظ': { minLen: 120, maxSegs: 3,  ratio: [1.0, 3.0],  tip: "Zo — To kabi + nuqta ustida." },
+    'ع': { minLen: 130, maxSegs: 1,  ratio: [0.8, 2.5],  tip: "Ayn — S shakli + pastga dum." },
+    'غ': { minLen: 130, maxSegs: 2,  ratio: [0.8, 2.5],  tip: "G\'ayn — Ayn kabi + nuqta ustida." },
+    'ف': { minLen: 110, maxSegs: 2,  ratio: [1.0, 3.0],  tip: "Fa — doira + dum o\'ngda + nuqta ustida." },
+    'ق': { minLen: 110, maxSegs: 3,  ratio: [0.7, 2.5],  tip: "Qof — doira + ikki nuqta ustida + chuqur dum." },
+    'ك': { minLen: 110, maxSegs: 2,  ratio: [1.0, 3.0],  tip: "Kof — ichi ko\'ndalang + dum pastda." },
+    'ل': { minLen: 90,  maxSegs: 1,  ratio: [0.3, 1.5],  tip: "Lom — yuqoriga ko\'tarilgan, pastga egilgan chiziq." },
+    'م': { minLen: 100, maxSegs: 1,  ratio: [0.7, 2.5],  tip: "Mim — kichik doira + pastga dum." },
+    'ن': { minLen: 100, maxSegs: 2,  ratio: [1.0, 3.5],  tip: "Nun — kosa shakli + nuqta ichida." },
+    'ه': { minLen: 100, maxSegs: 1,  ratio: [0.7, 2.0],  tip: "Ha — ikki bog\'liq oval." },
+    'و': { minLen: 80,  maxSegs: 1,  ratio: [0.4, 1.8],  tip: "Vov — kichik bosh + pastga dum." },
+    'ي': { minLen: 120, maxSegs: 3,  ratio: [1.5, 5.0],  tip: "Ya — Ba kabi + ikki nuqta pastda." },
+  };
+
+  const profile = harfProfiles[harf.arab] || { minLen: 80, maxSegs: 4, ratio: [0.3, 5.0], tip: "Harfni aniq va ravon chizing." };
+
+  // === BALL HISOBLASH ===
+  let score = 0;
+  let feedback = [];
+
+  // Uzunlik tekshiruvi
+  if (totalLen >= profile.minLen) {
+    score += 35;
+  } else if (totalLen >= profile.minLen * 0.6) {
+    score += 18;
+    feedback.push("Chiziq biroz qisqa — ko\'proq joy oling");
+  } else {
+    feedback.push("Chiziq juda qisqa — harfni kattaroq chizing");
+  }
+
+  // Nisbat (kenglik/balandlik)
+  if (bboxRatio >= profile.ratio[0] && bboxRatio <= profile.ratio[1]) {
+    score += 35;
+  } else if (bboxRatio < profile.ratio[0]) {
+    score += 15;
+    feedback.push("Harf juda tor — kengroq chizishga harakat qiling");
+  } else {
+    score += 15;
+    feedback.push("Harf juda keng — balandroq chizishga harakat qiling");
+  }
+
+  // To'liqlik (piksel zichligi)
+  if (fillRatio > 0.02) score += 20;
+  else if (fillRatio > 0.008) score += 10;
+  else feedback.push("Chiziq juda ingichka yoki ko'rinmayapti");
+
+  // Segment soni
+  if (segCount <= profile.maxSegs) {
+    score += 10;
+  } else {
+    feedback.push(`Juda ko\'p alohida chiziq (${segCount} ta) — harfni bir yoki ikki harakatda chizing`);
+  }
+
+  // === NATIJA ===
+  res.style.display = 'block';
+  if (score >= 70) {
+    res.className = 'draw-result good';
+    res.innerHTML = `✅ <strong>Barakalla!</strong> Yaxshi chizibsiz! (${score}/100)<br><small style="opacity:0.8">${profile.tip}</small>`;
+  } else if (score >= 40) {
+    res.className = 'draw-result bad';
+    const tips = feedback.length ? feedback.join('; ') : profile.tip;
+    res.innerHTML = `💡 <strong>Yaxshiroq urining!</strong> (${score}/100)<br><small style="opacity:0.85">${tips}</small>`;
+  } else {
+    res.className = 'draw-result bad';
+    res.innerHTML = `🔄 <strong>Qayta chizing.</strong> (${score}/100)<br><small style="opacity:0.85">${profile.tip}</small>`;
+  }
+
+  document.getElementById('checkBtn').disabled = false;
+}
+// ===================== CHIZISH TUGADI =====================
+
+// ===================== MAQSADLAR =====================
+const TAVSIYA_MAQSADLAR = [
+  { text: "28 ta arabcha harfni o'rganish", icon: "📝", tab: "harflar" },
+  { text: "Al-Fotiha surasini yodlash", icon: "📖", tab: "suralar" },
+  { text: "Al-Ixlos surasini yodlash", icon: "📖", tab: "suralar" },
+  { text: "Al-Falaq va An-Nos surasini yodlash", icon: "📖", tab: "suralar" },
+  { text: "Al-Kavsar surasini yodlash", icon: "📖", tab: "suralar" },
+  { text: "Har kuni 5 harf o'rganish", icon: "🎯", tab: "harflar" },
+  { text: "Testda 8/8 to'g'ri javob berish", icon: "✅", tab: "test" },
+  { text: "Barcha qisqa suralarni yodlash (10 ta)", icon: "🏆", tab: "suralar" },
+  { text: "Arabcha harflarni chizishni o'rganish", icon: "✏️", tab: "harflar" },
+  { text: "Har kuni 1 sura takrorlash", icon: "🔄", tab: "suralar" },
+  { text: "Tajvid asoslarini o'rganish", icon: "🎵", tab: "savol" },
+  { text: "20 ta surani to'liq yodlash", icon: "⭐", tab: "suralar" },
+];
+
+function getMaqsadlar() {
+  return JSON.parse(localStorage.getItem('maqsadlar') || '[]');
+}
+function saveMaqsadlar(list) {
+  localStorage.setItem('maqsadlar', JSON.stringify(list));
+}
+
+function renderMaqsadlar() {
+  const list = getMaqsadlar();
+  const done = list.filter(m => m.done).length;
+  const total = list.length;
+
+  // Stats
+  const statsEl = document.getElementById('maqsadStats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="maqsad-stat-row"><span>Jami maqsad</span><span>${total}</span></div>
+      <div class="maqsad-stat-row"><span>Bajarildi</span><span>${done}</span></div>
+      <div class="maqsad-stat-row"><span>Qoldi</span><span>${total - done}</span></div>
+      <div class="maqsad-progress"><div class="maqsad-progress-fill" style="width:${total ? Math.round(done/total*100) : 0}%"></div></div>
+      <div style="text-align:center; font-size:12px; color:#5a8a72;">${total ? Math.round(done/total*100) : 0}% bajarildi</div>
+    `;
+  }
+
+  const tabLabels = { harflar: '📝 Harflar', suralar: '📖 Suralar', test: '✅ Test', savol: '💬 Savol-Javob', maqsad: '🎯 Maqsadlar' };
+
+  const el = document.getElementById('maqsadList');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="color:#5a8a72; font-size:13px; text-align:center; padding:1rem 0;">Hali maqsad yo\'q. Quyidan tavsiya etilganlarni tanlang yoki yangi qo\'shing!</div>';
+  } else {
+    el.innerHTML = list.map((m, i) => `
+      <div class="maqsad-item ${m.done ? 'done' : ''}">
+        <div class="maqsad-check ${m.done ? 'done' : ''}" onclick="toggleMaqsad(${i})">${m.done ? '✓' : ''}</div>
+        <div class="maqsad-text" style="flex:1;">
+          ${m.text}
+          ${m.tab ? `<div style="font-size:11px; color:#1D9E75; margin-top:2px;">→ ${tabLabels[m.tab] || m.tab}</div>` : ''}
+        </div>
+        <button class="maqsad-open-btn" onclick="openRejim(${i})">▶ Rejim</button>
+        <div class="maqsad-del" onclick="deleteMaqsad(${i})">🗑</div>
+      </div>
+    `).join('');
+  }
+
+  // Tavsiyalar
+  const tavsiyaEl = document.getElementById('tavsiyaMaqsadlar');
+  if (tavsiyaEl) {
+    const existing = list.map(m => m.text);
+    const available = TAVSIYA_MAQSADLAR.filter(t => !existing.includes(t.text));
+    if (!available.length) {
+      tavsiyaEl.innerHTML = '<div style="color:#5a8a72; font-size:13px;">Barcha tavsiyalar qo\'shilgan ✓</div>';
+    } else {
+      tavsiyaEl.innerHTML = available.map(t => `
+        <div class="tavsiya-item" onclick="addTavsiyaMaqsad('${t.text.replace(/'/g,"\\'")}','${t.tab}')">
+          <span class="tavsiya-label">${t.icon} ${t.text} <span style="font-size:11px;color:#1D9E75;">→ ${tabLabels[t.tab]||''}</span></span>
+          <span class="tavsiya-add">+</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function goToTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  // Tab tugmasini ham active qilish
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${tab}'`)) {
+      t.classList.add('active');
+    }
+  });
+  if (tab === 'test') startQuiz();
+  if (tab === 'maqsad') renderMaqsadlar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleMaqsad(i) {
+  const list = getMaqsadlar();
+  list[i].done = !list[i].done;
+  saveMaqsadlar(list);
+  renderMaqsadlar();
+}
+
+function deleteMaqsad(i) {
+  const list = getMaqsadlar();
+  list.splice(i, 1);
+  saveMaqsadlar(list);
+  renderMaqsadlar();
+}
+
+function addCustomMaqsad() {
+  const inp = document.getElementById('customMaqsadInput');
+  const text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  const list = getMaqsadlar();
+  const i = list.length;
+  list.push({ text, done: false, tab: null, custom: true });
+  saveMaqsadlar(list);
+  inp.value = '';
+  renderMaqsadlar();
+  // Darhol rejim ochish
+  setTimeout(() => openRejim(i), 100);
+}
+
+async function addCustomMaqsadWithPlan() {
+  const inp = document.getElementById('customMaqsadInput');
+  const text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  const list = getMaqsadlar();
+  const i = list.length;
+  list.push({ text, done: false, tab: null, custom: true, planLoading: true });
+  saveMaqsadlar(list);
+  inp.value = '';
+  renderMaqsadlar();
+
+  // Darhol rejim ochish (plan yuklanmoqda holda)
+  setTimeout(() => openRejim(i), 100);
+
+  // AI bilan plan yarat
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: "Sen Qur'on o'rganish ustozi. Foydalanuvchi maqsad beradi, sen JSON formatida qaytarasan. Faqat JSON, hech qanday izoh yo'q.\nFormat: {\"steps\": [\"1-qadam matni\", \"2-qadam matni\", ...], \"icon\": \"emoji\", \"subtitle\": \"qisqa tavsif\", \"mashqType\": \"harf yoki sura yoki umumiy\"}\nO'zbek tilida. 4-6 qadam. Har qadam qisqa va aniq. mashqType: maqsad harflarga oid bo'lsa 'harf', suralarga oid bo'lsa 'sura', boshqa bo'lsa 'umumiy'.",
+        messages: [{role:"user", content: `Maqsad: ${text}`}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '{}';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    const updated = getMaqsadlar();
+    if (updated[i]) {
+      updated[i].planLoading = false;
+      updated[i].plan = parsed.steps || [];
+      updated[i].icon = parsed.icon || '🎯';
+      updated[i].subtitle = parsed.subtitle || '';
+      updated[i].mashqType = parsed.mashqType || 'umumiy';
+      saveMaqsadlar(updated);
+      renderMaqsadlar();
+      // Agar rejim hali ochiq bo'lsa — yangilash
+      if (currentRejimIndex === i) {
+        document.getElementById('rejimIcon').textContent = updated[i].icon || '🎯';
+        document.getElementById('rejimSubtitle').textContent = updated[i].subtitle || '';
+        renderRejimPlan();
+      }
+    }
+  } catch(e) {
+    const updated = getMaqsadlar();
+    if (updated[i]) { updated[i].planLoading = false; saveMaqsadlar(updated); }
+    if (currentRejimIndex === i) renderRejimPlan();
+  }
+}
+
+function addMaqsad() {
+  const text = prompt("Yangi maqsadingizni kiriting:");
+  if (!text || !text.trim()) return;
+  const list = getMaqsadlar();
+  list.push({ text: text.trim(), done: false, tab: null });
+  saveMaqsadlar(list);
+  renderMaqsadlar();
+}
+
+function addTavsiyaMaqsad(text, tab) {
+  const list = getMaqsadlar();
+  if (!list.find(m => m.text === text)) {
+    const i = list.length;
+    list.push({ text, done: false, tab: tab || null });
+    saveMaqsadlar(list);
+    renderMaqsadlar();
+    // Darhol rejim ochish
+    setTimeout(() => openRejim(i), 100);
+  }
+}
+
+function resetAllMaqsad() {
+  if (confirm("Hamma maqsadlarni o'chirmoqchimisiz?")) {
+    saveMaqsadlar([]);
+    renderMaqsadlar();
+  }
+}
+// ===================== MAQSAD REJIM MODAL =====================
+let currentRejimIndex = -1;
+let rejimQuizData = [];
+let rejimQuizCurrent = 0;
+let rejimPlanSteps = [];
+
+function openRejim(i) {
+  const list = getMaqsadlar();
+  const m = list[i];
+  if (!m) return;
+  currentRejimIndex = i;
+  rejimPlanSteps = m.plan ? [...m.plan] : [];
+
+  document.getElementById('rejimOverlay').classList.remove('hidden');
+  document.getElementById('rejimTitle').textContent = m.text;
+  document.getElementById('rejimIcon').textContent = m.icon || '🎯';
+  document.getElementById('rejimSubtitle').textContent = m.subtitle || "Maqsadga erishish rejimi";
+  document.body.style.overflow = 'hidden';
+
+  // Default tab — plan
+  const firstTab = document.querySelector('.rejim-tab');
+  document.querySelectorAll('.rejim-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.rejim-section').forEach(s => s.classList.remove('active'));
+  if (firstTab) firstTab.classList.add('active');
+  document.getElementById('rejim-plan').classList.add('active');
+  renderRejimPlan();
+}
+
+function closeRejim(e) {
+  if (e.target === document.getElementById('rejimOverlay')) closeRejimDirect();
+}
+function closeRejimDirect() {
+  document.getElementById('rejimOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function switchRejimTab(tab, btn) {
+  document.querySelectorAll('.rejim-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.rejim-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rejim-' + tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  if (tab === 'plan') renderRejimPlan();
+  if (tab === 'mashq') renderRejimMashq();
+  if (tab === 'test') renderRejimTest();
+  if (tab === 'ai-mashq') renderAiMashq();
+}
+
+function renderRejimPlan() {
+  const el = document.getElementById('planContent');
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+
+  if (!m) return;
+
+  if (m.planLoading) {
+    el.innerHTML = '<div style="color:#5a8a72; text-align:center; padding:1.5rem 0;">🤖 AI plan tayyorlamoqda...<br><span style="font-size:12px;">Bir oz kuting...</span></div>';
+    return;
+  }
+
+  const steps = m.plan && m.plan.length ? m.plan : defaultPlanForMaqsad(m.text, m.tab);
+  const isDefaultPlan = !(m.plan && m.plan.length);
+  const planDone = m.planDone || [];
+
+  el.innerHTML = `
+    ${isDefaultPlan ? `<div style="background:#1a2015; border-left:3px solid #FFC107; border-radius:8px; padding:10px 14px; font-size:12px; color:#7ab898; margin-bottom:12px;">
+      💡 Bu standart plan. <strong>🤖 AI yangi plan</strong> tugmasini bosib, maqsadingizga mos plan oling.
+    </div>` : ''}
+    <div style="margin-bottom:12px;">
+      ${steps.map((s, si) => `
+        <div class="plan-step ${planDone.includes(si) ? 'done-step' : ''}" onclick="togglePlanStep(${si})">
+          <div class="plan-step-num" style="${planDone.includes(si) ? 'background:#5a8a72;' : ''}">${planDone.includes(si) ? '✓' : si+1}</div>
+          <div class="plan-step-text">${s}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+      <button class="btn-green" style="font-size:12px; padding:8px 14px;" onclick="generateNewPlan()">🤖 AI yangi plan yarat</button>
+      ${m.tab ? `<button class="btn-green" style="font-size:12px; padding:8px 14px; background:#0d5a3f; border:1.5px solid #1D9E75;" onclick="goToTab('${m.tab}'); closeRejimDirect();">→ Tabga o'tish</button>` : ''}
+    </div>
+  `;
+}
+
+function togglePlanStep(si) {
+  const list = getMaqsadlar();
+  const m = list[currentRejimIndex];
+  if (!m) return;
+  if (!m.planDone) m.planDone = [];
+  const idx = m.planDone.indexOf(si);
+  if (idx >= 0) m.planDone.splice(idx, 1);
+  else m.planDone.push(si);
+  saveMaqsadlar(list);
+  renderRejimPlan();
+}
+
+async function generateNewPlan() {
+  const list = getMaqsadlar();
+  const m = list[currentRejimIndex];
+  if (!m) return;
+  document.getElementById('planContent').innerHTML = '<div style="color:#5a8a72; text-align:center; padding:1.5rem;">🤖 Yangi plan tayyorlanmoqda...</div>';
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: "Sen Qur'on o'rganish ustozi. Faqat JSON qaytarasan. Format: {\"steps\": [\"qadam\", ...], \"icon\": \"emoji\", \"subtitle\": \"tavsif\"} O'zbek tilida. 5-7 qadam, aniq va amaliy.",
+        messages: [{role:"user", content: `Qur'on o'rganish maqsadi: ${m.text}`}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '{}';
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    m.plan = parsed.steps || [];
+    m.planDone = [];
+    if (parsed.icon) m.icon = parsed.icon;
+    if (parsed.subtitle) m.subtitle = parsed.subtitle;
+    saveMaqsadlar(list);
+    document.getElementById('rejimIcon').textContent = m.icon || '🎯';
+    document.getElementById('rejimSubtitle').textContent = m.subtitle || '';
+    renderRejimPlan();
+  } catch(e) {
+    document.getElementById('planContent').innerHTML = '<div style="color:#ff9090; padding:1rem;">Internet xatosi. Qayta urinib ko\'ring.</div>';
+  }
+}
+
+function defaultPlanForMaqsad(text, tab) {
+  const t = (text || '').toLowerCase();
+  if (tab === 'harflar' || t.includes('harf')) return [
+    "Har kuni 3-4 ta yangi harf o'rganing",
+    "Harflarni katta qog'ozga yozing va devorga osing",
+    "'Harflar' tabiga o'ting va har harfni bosib tinglang",
+    "Har harf uchun 'Chizib ko'r' funksiyasini ishlating",
+    "Bir haftada 28 ta harfni takrorlang",
+    "Testda 8/8 natija olguncha mashq qiling"
+  ];
+  if (tab === 'suralar' || t.includes('sura') || t.includes('yodla')) return [
+    "Al-Fotiha surasidan boshlang — har kuni 10 marta o'qing",
+    "Audio tinglash orqali to'g'ri talaffuzni o'rganing",
+    "Har bir oyatni alohida yod oling",
+    "Kechqurun uxlashdan oldin bir marta takrorlang",
+    "Keyingi suraga faqat avvalgisini puxta bilgach o'ting",
+    "'Suralar' tabida matnni ko'rgan holda mashq qiling"
+  ];
+  if (tab === 'test' || t.includes('test')) return [
+    "Avval barcha harflarni o'rganing",
+    "Kuniga kamida 2 marta test ishlang",
+    "Xato qilgan harflarni alohida yozing",
+    "Xato harflarni 'Harflar' tabida takrorlang",
+    "8/8 natijaga erishing"
+  ];
+  return [
+    "Maqsadingizni kichik qismlarga bo'ling",
+    "Har kuni 15-20 daqiqa vaqt ajrating",
+    "Doimiy takrorlash — muvaffaqiyat kaliti",
+    "Har hafta o'z natijangizni tekshiring",
+    "Maqsadga erishgach, yangi maqsad qo'ying"
+  ];
+}
+
+function renderRejimMashq() {
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+  const el = document.getElementById('mashqContent');
+
+  const tab = m && m.tab;
+  if (tab === 'harflar' || (m && m.text.toLowerCase().includes('harf'))) {
+    const h = harflar[Math.floor(Math.random() * harflar.length)];
+    el.innerHTML = `
+      <div class="rejim-mini-quiz">
+        <div style="font-size:13px; color:#5a8a72; margin-bottom:8px;">📝 Harf tanish mashqi</div>
+        <div style="font-size:72px; text-align:center; color:#2ecc8f; background:#080f0b; border-radius:12px; padding:1rem; margin-bottom:12px;">${h.arab}</div>
+        <div id="mashqAns" style="display:none; text-align:center;">
+          <div style="font-size:20px; font-weight:700; color:#2ecc8f; margin-bottom:4px;">${h.uz} — "${h.trans}"</div>
+          <div style="font-size:13px; color:#5a8a72;">${h.misol}</div>
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
+          <button class="btn-green" style="font-size:13px;" onclick="document.getElementById('mashqAns').style.display='block'; this.style.display='none'">👁 Javobni ko'rsat</button>
+          <button class="btn-green" style="font-size:13px; background:#0d5a3f; border:1.5px solid #1D9E75;" onclick="renderRejimMashq()">→ Keyingi</button>
+        </div>
+      </div>`;
+  } else if (tab === 'suralar' || (m && m.text.toLowerCase().includes('sura'))) {
+    const s = suralar[Math.floor(Math.random() * suralar.length)];
+    el.innerHTML = `
+      <div class="rejim-mini-quiz">
+        <div style="font-size:13px; color:#5a8a72; margin-bottom:8px;">📖 Sura o'qish mashqi</div>
+        <div style="font-size:18px; font-weight:700; color:#2ecc8f; margin-bottom:6px;">${s.uz} — ${s.arab}</div>
+        <div style="font-size:14px; color:#7ab898; margin-bottom:10px;">${s.info}</div>
+        <div style="font-size:20px; line-height:2.2; direction:rtl; text-align:right; background:#080f0b; border-radius:10px; padding:1rem; color:#e8f5f0; border:1px solid #1a3028;">${s.matn}</div>
+        <div style="font-size:13px; color:#5a8a72; font-style:italic; margin-top:10px; line-height:1.6;">${s.tarjima}</div>
+        <button class="btn-green" style="font-size:13px; margin-top:12px;" onclick="renderRejimMashq()">→ Keyingi sura</button>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="rejim-mini-quiz" style="text-align:center;">
+        <div style="font-size:40px; margin-bottom:10px;">🎯</div>
+        <div style="font-size:15px; color:#c8e8d8; margin-bottom:6px;">Bu maqsad uchun maxsus mashq</div>
+        <div style="font-size:13px; color:#5a8a72; margin-bottom:16px;">Plan qadamlarini bajaring va natijani tekshiring</div>
+        <button class="rejim-tab active" onclick="switchRejimTab('plan', this)">📋 Planga qaytish</button>
+      </div>`;
+  }
+}
+
+function renderRejimTest() {
+  const el = document.getElementById('rejimTestContent');
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+  const text = (m && m.text || '').toLowerCase();
+  const tab = m && m.tab;
+
+  // Maqsad turini aniqlash
+  const isSuraGoal = tab === 'suralar' || text.includes('sura') || text.includes('yodla') || text.includes('fotiha') || text.includes('ixlos') || text.includes('falaq') || text.includes('nos') || text.includes('kavsar');
+  const isHarfGoal = tab === 'harflar' || text.includes('harf') || text.includes('arabcha belgi') || text.includes('chiz');
+  const isTestGoal = tab === 'test' || text.includes('test') || text.includes('8/8');
+
+  // Maqsad matnidan suralar nomlarini topish
+  let targetSuralar = suralar;
+  if (isSuraGoal && m && m.text) {
+    const mt = m.text.toLowerCase();
+    const filtered = suralar.filter(s =>
+      mt.includes(s.uz.toLowerCase()) ||
+      mt.includes(s.arab) ||
+      (mt.includes('qisqa') && s.matn.length < 200) ||
+      (mt.includes('10 ta') || mt.includes('barcha'))
+    );
+    if (filtered.length >= 2) targetSuralar = filtered;
+  }
+
+  if (isSuraGoal && !isHarfGoal) {
+    // SURA testi — oyatlarni tarjimadan tanish
+    rejimQuizType = 'sura';
+    rejimQuizData = [...targetSuralar].sort(() => Math.random() - 0.5).slice(0, Math.min(5, targetSuralar.length));
+    rejimQuizCorrect = 0;
+  } else {
+    // HARF testi — harf tanish
+    rejimQuizType = 'harf';
+    rejimQuizData = [...harflar].sort(() => Math.random() - 0.5).slice(0, 5);
+    rejimQuizCorrect = 0;
+  }
+  rejimQuizCurrent = 0;
+  showRejimQuestion();
+}
+
+let rejimQuizType = 'harf';
+let rejimQuizCorrect = 0;
+
+function showRejimQuestion() {
+  const el = document.getElementById('rejimTestContent');
+  if (rejimQuizCurrent >= rejimQuizData.length) {
+    const pct = Math.round(rejimQuizCorrect / rejimQuizData.length * 100);
+    const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+    const msg = pct >= 80 ? 'Barakalla!' : pct >= 50 ? "Yaxshi bo'ldi!" : "Ko'proq mashq qiling!";
+    el.innerHTML = `
+      <div style="text-align:center; padding:2rem 0;">
+        <div style="font-size:48px; margin-bottom:12px;">${emoji}</div>
+        <div style="font-size:18px; font-weight:700; color:#2ecc8f; margin-bottom:6px;">${msg}</div>
+        <div style="font-size:14px; color:#7ab898; margin-bottom:16px;">To'g'ri: <strong style="color:#2ecc8f">${rejimQuizCorrect}</strong> / ${rejimQuizData.length} (${pct}%)</div>
+        <button class="btn-green" onclick="renderRejimTest()">🔄 Qayta boshlash</button>
+      </div>`;
+    return;
+  }
+
+  if (rejimQuizType === 'sura') {
+    showRejimSuraQuestion();
+  } else {
+    showRejimHarfQuestion();
+  }
+}
+
+function showRejimHarfQuestion() {
+  const el = document.getElementById('rejimTestContent');
+  const q = rejimQuizData[rejimQuizCurrent];
+  const wrong = harflar.filter(h => h.uz !== q.uz).sort(() => Math.random() - 0.5).slice(0,3);
+  const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
+
+  el.innerHTML = `
+    <div class="rejim-mini-quiz">
+      <div style="font-size:12px; color:#5a8a72; margin-bottom:8px;">📝 Harf testi · Savol ${rejimQuizCurrent+1}/${rejimQuizData.length}</div>
+      <div class="rejim-quiz-q">"${q.uz}" harfi qaysi arabcha belgi?</div>
+      <div class="rejim-quiz-opts">
+        ${opts.map(o => `
+          <button class="rejim-opt" onclick="checkRejimAns('${o.arab}','${q.arab}',this,'harf')"
+            style="font-size:28px; text-align:center; padding:14px;">${o.arab}</button>
+        `).join('')}
+      </div>
+      <div id="rejimQRes" style="display:none; margin-top:10px; font-size:14px;"></div>
+    </div>`;
+}
+
+function showRejimSuraQuestion() {
+  const el = document.getElementById('rejimTestContent');
+  const q = rejimQuizData[rejimQuizCurrent];
+
+  // 3 turdagi savol — tasodifiy tanlash
+  const qType = rejimQuizCurrent % 3;
+
+  if (qType === 0) {
+    // Tarjimadan sura nomini top
+    const wrong = suralar.filter(s => s.uz !== q.uz).sort(() => Math.random() - 0.5).slice(0,3);
+    const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
+    const snippet = q.tarjima.slice(0, 80) + '...';
+    el.innerHTML = `
+      <div class="rejim-mini-quiz">
+        <div style="font-size:12px; color:#5a8a72; margin-bottom:8px;">📖 Sura testi · Savol ${rejimQuizCurrent+1}/${rejimQuizData.length}</div>
+        <div class="rejim-quiz-q">Bu tarjima qaysi suradan?</div>
+        <div style="font-size:13px; color:#7ab898; font-style:italic; background:#080f0b; border-radius:10px; padding:10px 12px; margin-bottom:12px; line-height:1.6;">"${snippet}"</div>
+        <div class="rejim-quiz-opts">
+          ${opts.map(o => `<button class="rejim-opt" onclick="checkRejimAns('${o.uz}','${q.uz}',this,'sura')">${o.uz}</button>`).join('')}
+        </div>
+        <div id="rejimQRes" style="display:none; margin-top:10px; font-size:14px;"></div>
+      </div>`;
+  } else if (qType === 1) {
+    // Arabcha matndan sura nomini top
+    const wrong = suralar.filter(s => s.uz !== q.uz).sort(() => Math.random() - 0.5).slice(0,3);
+    const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
+    const snippet = q.matn.split(' ').slice(0,6).join(' ');
+    el.innerHTML = `
+      <div class="rejim-mini-quiz">
+        <div style="font-size:12px; color:#5a8a72; margin-bottom:8px;">📖 Sura testi · Savol ${rejimQuizCurrent+1}/${rejimQuizData.length}</div>
+        <div class="rejim-quiz-q">Bu arabcha oyat qaysi suradan?</div>
+        <div style="font-size:22px; direction:rtl; text-align:right; background:#080f0b; border-radius:10px; padding:12px; margin-bottom:12px; color:#e8f5f0; line-height:2;">${snippet}...</div>
+        <div class="rejim-quiz-opts">
+          ${opts.map(o => `<button class="rejim-opt" onclick="checkRejimAns('${o.uz}','${q.uz}',this,'sura')">${o.uz} — ${o.arab}</button>`).join('')}
+        </div>
+        <div id="rejimQRes" style="display:none; margin-top:10px; font-size:14px;"></div>
+      </div>`;
+  } else {
+    // Sura nechi oyatdan iborat?
+    const infoMatch = q.info.match(/(\d+)\s*oyat/);
+    const correctAns = infoMatch ? infoMatch[1] + ' oyat' : q.info;
+    const wrongNums = ['3 oyat','6 oyat','8 oyat','11 oyat','4 oyat','5 oyat','7 oyat'].filter(x => x !== correctAns);
+    const opts = [correctAns, ...wrongNums.slice(0,3)].sort(() => Math.random() - 0.5);
+    el.innerHTML = `
+      <div class="rejim-mini-quiz">
+        <div style="font-size:12px; color:#5a8a72; margin-bottom:8px;">📖 Sura testi · Savol ${rejimQuizCurrent+1}/${rejimQuizData.length}</div>
+        <div class="rejim-quiz-q">"${q.uz}" surasi nechi oyatdan iborat?</div>
+        <div style="font-size:32px; text-align:center; color:#2ecc8f; margin:10px 0;">${q.arab}</div>
+        <div class="rejim-quiz-opts">
+          ${opts.map(o => `<button class="rejim-opt" onclick="checkRejimAns('${o}','${correctAns}',this,'info')">${o}</button>`).join('')}
+        </div>
+        <div id="rejimQRes" style="display:none; margin-top:10px; font-size:14px;"></div>
+      </div>`;
+  }
+}
+
+function checkRejimAns(sel, correct, btn) {
+  document.querySelectorAll('.rejim-opt').forEach(b => b.onclick = null);
+  const res = document.getElementById('rejimQRes');
+  if (sel === correct) {
+    rejimQuizCorrect++;
+    btn.classList.add('correct');
+    res.style.display = 'block';
+    res.innerHTML = '<span style="color:#2ecc8f">✓ To\'g\'ri!</span>';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.rejim-opt').forEach(b => {
+      if (b.textContent.trim().startsWith(correct) || b.textContent.trim() === correct) b.classList.add('correct');
+    });
+    res.style.display = 'block';
+    res.innerHTML = `<span style="color:#ff7070">✗ Noto'g'ri. To'g'ri: <strong>${correct}</strong></span>`;
+  }
+  setTimeout(() => { rejimQuizCurrent++; showRejimQuestion(); }, 1500);
+}
+// ===================== MAQSAD REJIM TUGADI =====================
+
+// ===================== AI MASHQ (MAQSADGA XUSUSIY) =====================
+let aiMashqHistory = [];
+
+async function renderAiMashq() {
+  const el = document.getElementById('aiMashqContent');
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+  if (!m) return;
+
+  // Chat UI
+  el.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <div style="font-size:12px; color:#5a8a72; margin-bottom:6px;">🤖 Maqsadingiz: <strong style="color:#2ecc8f">${m.text}</strong></div>
+      <div style="background:#080f0b; border:1px solid #1a3028; border-radius:12px; padding:10px 14px; font-size:13px; color:#7ab898; margin-bottom:10px;">
+        Bu bo'limda AI sizning maqsadingizga mos savol beradi, tushuntiradi, va sinovdan o'tkazadi. Istalgan savolni bering yoki "savol ber" deb yozing.
+      </div>
+    </div>
+    <div id="aiMashqMsgs" style="max-height:340px; overflow-y:auto; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;"></div>
+    <div style="display:flex; gap:8px;">
+      <input id="aiMashqInput" class="add-maqsad-input" style="margin:0; flex:1;" placeholder="Savol yozing yoki 'savol ber'..." onkeydown="if(event.key==='Enter') sendAiMashq()" />
+      <button class="btn-green" style="padding:10px 16px; font-size:14px; margin:0;" onclick="sendAiMashq()">➤</button>
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+      <button onclick="aiMashqQuick('Menga savol ber')" style="padding:6px 12px; border-radius:8px; border:1px solid #1D9E75; background:#0d2018; color:#2ecc8f; font-size:12px; cursor:pointer;">❓ Savol ber</button>
+      <button onclick="aiMashqQuick('Tushuntir')" style="padding:6px 12px; border-radius:8px; border:1px solid #1D9E75; background:#0d2018; color:#2ecc8f; font-size:12px; cursor:pointer;">📖 Tushuntir</button>
+      <button onclick="aiMashqQuick('Yangi mavzu')" style="padding:6px 12px; border-radius:8px; border:1px solid #1D9E75; background:#0d2018; color:#2ecc8f; font-size:12px; cursor:pointer;">🔄 Yangi mavzu</button>
+      <button onclick="aiMashqReset()" style="padding:6px 12px; border-radius:8px; border:1px solid #3a2020; background:#1a0d0d; color:#ff9090; font-size:12px; cursor:pointer;">🗑 Tozala</button>
+    </div>
+  `;
+
+  aiMashqHistory = [];
+
+  // Avto-boshlash: AI birinchi savol bersin
+  await sendAiMashqMsg("Assalomu alaykum! Maqsadim: " + m.text + ". Shu maqsadga oid bitta savol ber yoki mashq qil.");
+}
+
+function aiMashqQuick(text) {
+  document.getElementById('aiMashqInput').value = text;
+  sendAiMashq();
+}
+
+function aiMashqReset() {
+  aiMashqHistory = [];
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+  renderAiMashq();
+}
+
+function addAiMashqMsg(role, text) {
+  const msgs = document.getElementById('aiMashqMsgs');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.style.cssText = role === 'user'
+    ? 'background:#1D9E75; color:white; border-radius:14px 14px 4px 14px; padding:10px 14px; font-size:13px; line-height:1.6; align-self:flex-end; max-width:85%;'
+    : 'background:#0d2018; color:#7ab898; border-radius:14px 14px 14px 4px; padding:10px 14px; font-size:13px; line-height:1.6; border:1px solid #1a3028; align-self:flex-start; max-width:90%;';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendAiMashq() {
+  const inp = document.getElementById('aiMashqInput');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  await sendAiMashqMsg(text);
+}
+
+async function sendAiMashqMsg(userText) {
+  const list = getMaqsadlar();
+  const m = currentRejimIndex >= 0 ? list[currentRejimIndex] : null;
+  if (!m) return;
+
+  addAiMashqMsg('user', userText);
+  aiMashqHistory.push({ role: 'user', content: userText });
+
+  // Loading
+  const msgs = document.getElementById('aiMashqMsgs');
+  const loadDiv = document.createElement('div');
+  loadDiv.id = 'aiMashqLoad';
+  loadDiv.style.cssText = 'background:#172318; color:#5a8a72; border-radius:14px; padding:10px 14px; font-size:13px; font-style:italic; align-self:flex-start;';
+  loadDiv.textContent = '🤖 Yozmoqda...';
+  if (msgs) msgs.appendChild(loadDiv);
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const sysPrompt = `Sen Qur'on o'rganish ustozi va murabbiy. Foydalanuvchining maqsadi: "${m.text}". 
+Shu maqsadga mos: savol ber, javobini tekshir, tushuntir, rag'batlantir. 
+Qisqa va aniq javob ber (3-6 jumla). O'zbek tilida. Arabcha matnlarni to'g'ri yoz.
+Agar foydalanuvchi javob bersa — to'g'ri yoki noto'g'riligini ayt va izohla. Agar savol so'rasa — yangi savol ber.`;
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 500,
+        system: sysPrompt,
+        messages: aiMashqHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Javob olishda xato.';
+
+    const ld = document.getElementById('aiMashqLoad');
+    if (ld) ld.remove();
+
+    aiMashqHistory.push({ role: 'assistant', content: reply });
+    addAiMashqMsg('bot', reply);
+  } catch(e) {
+    const ld = document.getElementById('aiMashqLoad');
+    if (ld) ld.remove();
+    addAiMashqMsg('bot', '❌ Internet xatosi. Qayta urinib ko\'ring.');
+  }
+}
+// ===================== AI MASHQ TUGADI =====================
+
+// ===================== PROFIL =====================
+function getProfil() {
+  try { return JSON.parse(localStorage.getItem('profil') || '{}'); } catch(e) { return {}; }
+}
+function saveProfil(p) { localStorage.setItem('profil', JSON.stringify(p)); }
+
+function renderHeaderProfil() {
+  const p = getProfil();
+  const el = document.getElementById('headerProfil');
+  const sub = document.getElementById('headerSubtitle');
+  if (p.ism) {
+    el.textContent = '👤 ' + p.ism;
+    if (p.maqsad) sub.innerHTML = `<span style="color:#5a8a72">${p.maqsad}</span> · <span style="color:#1D9E75;">✎ Tahrirlash</span>`;
+    else sub.innerHTML = `Boshlang'ichlar uchun qulay platforma · <span style="color:#1D9E75;">✎ Profil</span>`;
+  } else {
+    el.textContent = '';
+    sub.innerHTML = `Boshlang'ichlar uchun qulay platforma · <span style="color:#1D9E75;">👤 Profil yaratish</span>`;
+  }
+}
+
+function openProfilModal() {
+  const p = getProfil();
+  document.getElementById('profilIsm').value = p.ism || '';
+  document.getElementById('profilMaqsad').value = p.maqsad || '';
+  document.getElementById('profilOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('profilIsm').focus(), 100);
+}
+function closeProfilModal() {
+  document.getElementById('profilOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function saveProfilModal() {
+  const ism = document.getElementById('profilIsm').value.trim();
+  const maqsad = document.getElementById('profilMaqsad').value.trim();
+  saveProfil({ ism, maqsad });
+  renderHeaderProfil();
+  closeProfilModal();
+}
+// ===================== PROFIL TUGADI =====================
+
+renderHarflar();
+renderSuralar();
+renderMaqsadlar();
+renderHeaderProfil();
+</script>
+</body>
+</html>
